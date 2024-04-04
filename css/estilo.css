@@ -1,0 +1,23 @@
+/* Fuentes */
+@import url('https://fonts.googleapis.com/css2?family=Kdam+Thmor+Pro&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
+body {
+    margin: 0px;
+    padding: 0px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(to bottom right, #f7cac9, #fad0c4, #e0ffb2, #b5e4ff);
+}
+
+h1 {
+    font-family: 'Kdam Thmor Pro', sans-serif;
+    font-size: 5rem;
+    letter-spacing: 0.7rem;
+    text-transform: uppercase;
+    font-style: italic;
+    text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.5), -1px -1px 1px rgba(0, 0, 0, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.507);
+    padding: 5px;
+}
