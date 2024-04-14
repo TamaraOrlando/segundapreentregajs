@@ -117,10 +117,9 @@ function eliminarProducto() {
     do {
         productoAEliminar = parseInt(prompt(`Ingrese el número del producto que desea eliminar:\n${listarProductosCarrito()}`));
         if (!isNaN(productoAEliminar) && productoAEliminar >= 1 && productoAEliminar <= carrito.length) {
-            const precioEliminado = carrito[productoAEliminar - 1].precio;
             carrito.splice(productoAEliminar - 1, 1);
             alert("Producto eliminado del carrito.");
-            break; // Sale del bucle al eliminar el producto
+            break; 
         } else {
             alert("Por favor, ingrese un número válido.");
         }
@@ -137,43 +136,200 @@ function listarProductosCarrito() {
     return lista;
 }
 
+
+// Función para buscar un producto por su nombre
+function buscarProductoPorNombre() {
+    let productoEncontrado;
+    let nombre;
+
+    do {
+        nombre = prompt("Ingrese el nombre del producto que desea buscar. Utilice palabras como: 'Frutales', 'Tabaquiles', 'Bebidas' o 'Postres'. Pulse cancelar si desea volver al menú principal.");
+        
+        if (nombre === null) {
+            mostrarMenuPrincipal();
+            return null;
+        }
+
+        nombre = nombre.toLowerCase().trim();
+
+        if (nombre !== "") {
+            // Busca el producto por nombre o por palabras clave
+            productoEncontrado = opciones.find(producto =>
+                producto.nombre.toLowerCase() === nombre ||
+                ((nombre === "fruta" || nombre === "frutal" || nombre === "frutales") && producto.nombre.toLowerCase().includes("frutales y cool")) ||
+                ((nombre === "tabaco" || nombre === "tabaquil" || nombre === "tabaquiles" || nombre === "bebida" || nombre === "bebidas" || nombre === "alcohol") && producto.nombre.toLowerCase().includes("tabaquiles y bebidas alcohólicas")) ||
+                ((nombre === "dulce" || nombre === "dulces" || nombre === "postre" || nombre === "postres") && producto.nombre.toLowerCase().includes("postres"))
+            );
+
+            if (!productoEncontrado) {
+                alert("No se encontró ningún producto con ese nombre. Por favor, intente nuevamente utilizando palabras como: 'Frutales', 'Tabaquiles', 'Bebidas' o 'Postres'.");
+            }
+        }
+    } while (!productoEncontrado);
+
+    return productoEncontrado;
+}
+
+
+// Función para filtrar productos por categoría y precio
+function filtrarProductosPorCategoria(categoria, filtroPrecio) {
+
+    // Filtra productos por categoría
+    let productosFiltrados = opciones.filter(producto =>
+        producto.nombre.toLowerCase().includes(categoria.toLowerCase())
+    );
+
+    // Filtra productos por precio
+    let productosFiltradosPorPrecio = productosFiltrados.map(producto => {
+        let preciosFiltrados = producto.precios.filter(precio => precio <= filtroPrecio);
+
+        if (preciosFiltrados.length > 0) {
+            let preciosConPresentacion = preciosFiltrados.map(precio => `${precio} - frasco de ${precio >= 9000 ? 60 : 30}ml`);
+
+            if (filtroPrecio >= 9000 && !preciosFiltrados.some(precio => precio < 9000)) {
+                preciosConPresentacion.unshift(`4500 - frasco de 30ml`);
+            }
+
+            return {
+                ...producto,
+                precios: preciosConPresentacion
+            };
+        } else {
+            return null;
+        }
+    });
+
+    let productosFiltradosFinal = productosFiltradosPorPrecio.filter(Boolean);
+
+    return productosFiltradosFinal;
+}
+
+
+// Función para solicitar un comentario al usuario
+function solicitarComentario() {
+    let comentario;
+    do {
+        comentario = prompt("Antes de seguir navegando por el sitio, le pedimos que nos deje un comentario acerca de los sabores que le gustaría que incorporáramos a nuestros productos.\nEjemplo: sabor Flan, sabor Ananá, etc.");
+        if (comentario && comentario.trim() !== "") {
+            if (!isNaN(comentario) || comentario.length < 3) {
+                alert("El comentario debe tener al menos 3 letras y no debe contener números. Por favor, inténtelo de nuevo.");
+            } else {
+                break;
+            }
+        } else {
+            alert("Por favor, ingrese un comentario válido.");
+        }
+    } while (true);
+}
+
+
+// Declaramos variable para finalizar la ejecución del código
+let irAlSitioYFinalizar = false;
+
+
 // Función principal que muestra el menú y gestiona las opciones
 function mostrarMenuPrincipal() {
     do {
+        if (irAlSitioYFinalizar) {
+            return false;
+        }
+
         let montoTotal = carrito.reduce((total, producto) => total + producto.precio, 0);
-        let opcion = prompt(`Monto total hasta el momento: $${montoTotal}.\n¿Qué desea hacer? Ingrese el número correspondiente a la acción que desea realizar (1, 2 , 3 o 4):\n1. Agregar productos\n2. Eliminar productos\n3. Ir al carrito\n4. Ir al sitio`);
+        let opcion = prompt(`Monto total hasta el momento: $${montoTotal}.\n¿Qué desea hacer? Ingrese el número correspondiente a la acción que desea realizar (1, 2 , 3, 4, 5 o 6):\n1. Agregar productos\n2. Eliminar productos\n3. Buscar producto por nombre\n4. Filtrar productos por categoría\n5. Ir al carrito\n6. Ir al sitio`);
 
         switch (opcion) {
             case "1":
                 elegirOpcionYSabor();
                 break;
+
             case "2":
                 eliminarProducto();
                 break;
+
             case "3":
+                let productoEncontrado = buscarProductoPorNombre();
+
+                if (productoEncontrado === null) {
+                } else {
+                    alert(`Producto encontrado:\nNombre: ${productoEncontrado.nombre}, Sabores: ${productoEncontrado.sabores.join(", ")}, Precios: $${productoEncontrado.precios.join(", ")}`);
+                }
+                break;
+
+            case "4":
+                let categoriaProducto;
+                let continuar = true; 
+                do {
+                    categoriaProducto = prompt("Ingrese la categoría del producto que desea filtrar, utilizando palabras como 'Frutales y cool', 'Tabaquiles y bebidas alcoholicas' o 'Postres'. Pulse cancelar si desea volver al menú principal.");
+                    if (categoriaProducto === null) {
+                        mostrarMenuPrincipal(); 
+                        return;
+                    }
+                    categoriaProducto = categoriaProducto.trim().toLowerCase();
+                    if (!["frutales y cool", "tabaquiles y bebidas alcoholicas", "postres"].includes(categoriaProducto)) {
+                        alert("Por favor, utilice palabras como 'Frutales y cool', 'Tabaquiles y bebidas alcoholicas' o 'Postres'.");
+                    } else {
+                        continuar = false;
+                    }
+                } while (continuar);
+
+                let filtroPrecio;
+                do {
+                    filtroPrecio = parseInt(prompt("Ingrese el precio máximo que desea aplicar como filtro, utilizando sólo números:"));
+                    if (filtroPrecio === null) {
+                        mostrarMenuPrincipal(); 
+                        return;
+                    }
+                    if (isNaN(filtroPrecio)) {
+                        alert("Por favor, ingrese un número válido para el precio máximo.");
+                    } else if (filtroPrecio < 4500) {
+                        alert("El monto mínimo es de $4500. Por favor, vuelva a ingresar el precio máximo.");
+                    }
+                } while (isNaN(filtroPrecio) || filtroPrecio < 4500);
+
+                let productosFiltrados = filtrarProductosPorCategoria(categoriaProducto, filtroPrecio);
+
+                if (productosFiltrados.length > 0) {
+                    let mensaje = "Productos encontrados:\n";
+                    productosFiltrados.forEach(producto => {
+                        let preciosConPresentacion = producto.precios.join(", ");
+                        mensaje += `Nombre: ${producto.nombre}, Sabores: ${producto.sabores.join(", ")}, Precios: $${preciosConPresentacion}\n`;
+                    });
+                    alert(mensaje);
+                } else {
+                    alert("No se encontraron productos que cumplan con los criterios de filtrado.");
+                }
+                break;
+
+            case "5":
                 if (montoTotal === 0) {
                     alert("Usted no posee productos en el carrito. Pulse aceptar para volver al menú principal.");
-                    continue; // Vuelve al inicio del bucle do-while
-
+                    continue; 
                 } else {
                     let opcionesElegidas = carrito.map((producto) => `${producto.opcion} - ${producto.sabor} - ${producto.presentacion} - $${producto.precio}`).join('\n');
                     const confirmacionCompra = confirm(`Opciones elegidas:\n${opcionesElegidas}\n\nEl monto total de su carrito es: $${montoTotal}.\n¿Desea comprar el carrito? Pulse aceptar para acceder al sitio y finalizar su compra, o cancelar para volver al menú principal.`);
                     if (confirmacionCompra) {
+                        irAlSitioYFinalizar = true;
                         irAlSitio();
-                        return false; // Detiene la ejecución de main
+                        solicitarComentario();
+                        return false; 
                     }
                 }
                 break;
-            case "4":
+
+            case "6":
+                irAlSitioYFinalizar = true;
                 irAlSitio();
-                return false; // Detiene la ejecución de main
+                solicitarComentario();
+                return false;
+
             default:
                 alert("Por favor, seleccione una opción válida.");
                 break;
         }
-        // Verifica condición de salida del bucle
+        
     } while (true);
 }
+
 
 // Función que muestra un mensaje y redirecciona al sitio web
 function irAlSitio() {
@@ -196,22 +352,6 @@ function main() {
         primeraCompra = false;
     }
 
-    // Prompt para pedir comentario al usuario
-    let comentario;
-    do {
-        comentario = prompt("Antes de seguir navegando por el sitio, le pedimos que nos deje un comentario acerca de los sabores que le gustaría que incorporáramos a nuestros productos.\nEjemplo: sabor Flan, sabor Ananá, etc.");
-        if (comentario && comentario.trim() !== "") {
-            if (!isNaN(comentario) || comentario.length < 3) {
-                alert("El comentario debe tener al menos 3 letras y no debe contener números. Por favor, inténtelo de nuevo.");
-            } else {
-                break;
-            }
-        } else {
-            alert("Por favor, ingrese un comentario válido.");
-        }
-    } while (true);
-
-    // Después de este alert, se interrumpe la ejecución de código
     alert(`¡Gracias ${nombreUsuario}! Lo tendremos en cuenta.`);
 }
 
